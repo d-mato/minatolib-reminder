@@ -10,6 +10,12 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "babel-cli": "^6.9.0"
+    "babel-cli": "^6.9.0",
+    "casperjs": "^1.1.1",
+    "spooky": "^0.2.5",
+    "tiny-jsonrpc": "^2.0.1"
+  },
+  "dependencies": {
+    "cheerio": "^0.20.0"
   }
 }
