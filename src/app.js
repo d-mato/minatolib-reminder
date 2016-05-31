@@ -1,7 +1,8 @@
-import MinatolibClient from './minatolib-client';
-import GCalendarRegister from './gcalendar-register';
+import MinatoLibClient from './MinatoLibClient';
+import GCalendarRegister from './GCalendarRegister';
+import RemindMailer from './RemindMailer';
 
-var books = MinatolibClient.getLoanedBooks();
+var books = MinatoLibClient.getLoanedBooks();
 books.forEach( (book) => {
   GCalendarRegister.set({
     scheduleTitle: `${book.title}`,
