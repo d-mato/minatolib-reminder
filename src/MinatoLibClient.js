@@ -64,7 +64,7 @@ spooky.on('body', function(body) {
   $('.list tbody tr').each(function(i, tr) {
     var book = {
       title: $('td', tr).eq(0).text().trim(),
-      returnDate: $('td', tr).eq(4).text().trim()
+      returnDate: $('td', tr).eq(4).text().trim().replace(/\//g, '-')
     };
     books.push(book);
   });
