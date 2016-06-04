@@ -1,26 +1,34 @@
-import fs from 'fs';
+import {EventEmitter} from 'events';
 import gcal from 'google-calendar';
+import APIClient from './APIClient';
 
-const accessToken = JSON.parse(fs.readFileSync('token.json', 'utf-8')).access_token;
-const google_calendar = new gcal.GoogleCalendar(accessToken);
 const calendarId = 'telnetstat@gmail.com';
-
 const allEvents = [];
-google_calendar.events.list(calendarId, (err, res) => {
-  if (err) {
-    console.log(err);
-    return;
-  }
-  allEvents.push(...res.items);
-  console.log(`Events count: ${res.items.length}`);
-});
 
-class GCalendarRegister {
+class GCalendarRegister extends EventEmitter {
+  constructor() {
+    super();
+    APIClient.on('ready', (access_token) => {
+      this.google_calendar = new gcal.GoogleCalendar(access_token);
+
+      this.google_calendar.events.list(calendarId, (err, res) => {
+        if (err) {
+          console.log(err);
+          process.exit();
+        }
+        allEvents.push(...res.items);
+        console.log(`Events count: ${res.items.length}`);
+        this.emit('ready');
+      });
+    });
+  }
+
   clean(summary) {
-    allEvents.forEach(function(item) {
+    allEvents.forEach((item) => {
       if (item.summary == summary) {
-        console.log('REMOVE', item.id);
-        google_calendar.events.delete(calendarId, item.id, () => {});
+        this.google_calendar.events.delete(calendarId, item.id, () => {
+          console.log('REMOVE', item.id);
+        });
       }
     });
   }
@@ -31,12 +39,12 @@ class GCalendarRegister {
       start: {date},
       end: {date},
     };
-    google_calendar.events.insert(calendarId, event, (err, res) => {
+    this.google_calendar.events.insert(calendarId, event, (err, res) => {
       if (err) {
         console.log(err);
-        return;
+        process.exit();
       }
-      console.log(res);
+      console.log('SET', summary);
     });
   }
 }
