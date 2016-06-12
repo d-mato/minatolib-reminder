@@ -11,7 +11,12 @@ class GCalendarRegister extends EventEmitter {
     APIClient.on('ready', (access_token) => {
       this.google_calendar = new gcal.GoogleCalendar(access_token);
 
-      this.google_calendar.events.list(calendarId, (err, res) => {
+      let options = {
+        singleEvents: true,
+        orderBy: 'startTime',
+        timeMin: (new Date()).toISOString()
+      };
+      this.google_calendar.events.list(calendarId, options, (err, res) => {
         if (err) {
           console.log(err);
           process.exit();
