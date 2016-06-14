@@ -1,9 +1,22 @@
 import MinatoLibClient from './MinatoLibClient';
 import GCalendarRegister from './GCalendarRegister';
 import RemindMailer from './RemindMailer';
-import {EventEmitter} from 'events';
 
-const execute = () => {
+const readyGCalendarRegister = new Promise((resolve) => {
+  GCalendarRegister.on('ready', () => {
+    console.log("GCalendarRegister: ready");
+    resolve();
+  });
+});
+
+const readyMinatoLibClient = new Promise((resolve) => {
+  MinatoLibClient.on('ready', () => {
+    console.log("MinatoLibClient: ready");
+    resolve();
+  });
+});
+
+Promise.all([readyGCalendarRegister, readyMinatoLibClient]).then(() => {
   let books = MinatoLibClient.getLoanedBooks();
   books.forEach( (book) => {
     let type = '[返却日]';
@@ -17,15 +30,4 @@ const execute = () => {
       date: book.returnDate,
     });
   });
-};
-
-let eventCount = 0;
-GCalendarRegister.on('ready', () => {
-  console.log("GCalendarRegister: ready");
-  if (++eventCount === 2) execute();
-});
-
-MinatoLibClient.on('ready', () => {
-  console.log("MinatoLibClient: ready");
-  if (++eventCount === 2) execute();
 });
