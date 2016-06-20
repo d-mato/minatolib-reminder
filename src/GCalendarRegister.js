@@ -4,19 +4,46 @@ import APIClient from './APIClient';
 
 const calendarId = 'telnetstat@gmail.com';
 const allEvents = [];
+const wait = 1000;
+let SerialQ = Promise.resolve();
+let google_calendar;
+
+const _delete = function(eventId) {
+  return new Promise((resolve) => {
+    google_calendar.events.delete(calendarId, eventId, (err) => {
+      console.log('REMOVE', eventId);
+      setTimeout(resolve, wait);
+    });
+  });
+};
+
+const _insert = function(event) {
+  return new Promise((resolve) => {
+    google_calendar.events.insert(calendarId, event, (err, res) => {
+      if (err) {
+        console.log(err);
+        process.exit();
+      }
+      console.log('SET', event.summary);
+      setTimeout(resolve, wait);
+    });
+  });
+};
 
 class GCalendarRegister extends EventEmitter {
   constructor() {
     super();
     APIClient.on('ready', (access_token) => {
-      this.google_calendar = new gcal.GoogleCalendar(access_token);
+      google_calendar = new gcal.GoogleCalendar(access_token);
 
+      let date = new Date();
+      date.setDate(date.getDate() - 7);
       let options = {
         singleEvents: true,
         orderBy: 'startTime',
-        timeMin: (new Date()).toISOString()
+        timeMin: date.toISOString(),
       };
-      this.google_calendar.events.list(calendarId, options, (err, res) => {
+      google_calendar.events.list(calendarId, options, (err, res) => {
         if (err) {
           console.log(err);
           process.exit();
@@ -31,9 +58,7 @@ class GCalendarRegister extends EventEmitter {
   clean(summary) {
     allEvents.forEach((item) => {
       if (item.summary == summary) {
-        this.google_calendar.events.delete(calendarId, item.id, () => {
-          console.log('REMOVE', item.id);
-        });
+        SerialQ = SerialQ.then(_delete.bind(null, item.id));
       }
     });
   }
@@ -44,14 +69,9 @@ class GCalendarRegister extends EventEmitter {
       start: {date},
       end: {date},
     };
-    this.google_calendar.events.insert(calendarId, event, (err, res) => {
-      if (err) {
-        console.log(err);
-        process.exit();
-      }
-      console.log('SET', summary);
-    });
+    SerialQ = SerialQ.then(_insert.bind(null, event));
   }
+
 }
 
 export default new GCalendarRegister();
