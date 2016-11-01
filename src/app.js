@@ -1,4 +1,4 @@
-import MinatoLibClient from './MinatoLibClient';
+import MinatoLibClient from '../v2';
 import GCalendarRegister from './GCalendarRegister';
 import RemindMailer from './RemindMailer';
 
